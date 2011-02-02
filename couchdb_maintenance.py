@@ -51,7 +51,7 @@ for server_url in server_urls:
         logging.info("Compacting database...")
         db.compact()
 	
-	for design_doc_name in list(db.all_docs(startkey="_design", endkey="_design0", wrapper=lambda row: row['id'][len('_design/'):])):
+	for design_doc_name in db.all_docs(startkey="_design", endkey="_design0", wrapper=lambda row: row['id'][len('_design/'):]):
 	    logging.info("Compacting design document %s..." % design_doc_name)
 	    db.compact(dname=design_doc_name)
         
