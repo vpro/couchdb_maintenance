@@ -45,6 +45,9 @@ for server_url in server_urls:
     logging.info("Connected to CouchDB server at %s" % server_url)
 
     for db_name in server.all_dbs():
+        if(db_name == "_users"):
+            continue
+
         logging.info("Database: %s" % db_name)
         db = server.get_or_create_db(db_name)
 		
