@@ -41,25 +41,46 @@ if not server_urls:
     sys.exit(1)
 
 for server_url in server_urls:
-    server = Server(server_url)
-    logging.info("Connected to CouchDB server at %s" % server_url)
+    try:
+        server = Server(server_url)
+    except:
+        logging.error("Could not connect to CouchDB at %s", server_url)
+        continue
+    logging.info("Connected to CouchDB server at %s", server_url)
 
-    for db_name in server.all_dbs():
-        if(db_name == "_users"):
+    logging.info("Getting list of databases...")
+    try:
+        db_names = server.all_dbs()
+    except:
+        logging.error("Could not get list of databases for CouchDB at %s", server_url)
+        continue
+    logging.info("Databases: %s", ", ".join(db_names))
+
+    for db_name in db_names:
+        if db_name == "_users":
             continue
 
-        logging.info("Database: %s" % db_name)
+        logging.info("Database: %s", db_name)
         db = server.get_or_create_db(db_name)
-		
-        logging.info("Compacting database...")
-        db.compact()
 	
-	for design_doc_name in db.all_docs(startkey="_design", endkey="_design0", wrapper=lambda row: row['id'][len('_design/'):]):
-	    logging.info("Compacting design document %s..." % design_doc_name)
-	    db.compact(dname=design_doc_name)
+        logging.info("Starting compaction for database %s...", db_name)
+        try:	
+            db.compact()
+        except :
+            logging.error("Error compacting database %s", db_name)
+            
+        for design_doc_name in db.all_docs(startkey="_design", endkey="_design0", wrapper=lambda row: row['id'][len('_design/'):]):
+	    logging.info("Starting compaction for design document %s...", design_doc_name)
+	    try:
+                db.compact(dname=design_doc_name)
+            except:
+                logging.error("Error compacting design document %s", design_doc_name)
         
-        logging.info("Cleaning up views...")
-        db.view_cleanup()
-
-logging.info("All done.")
+        logging.info("Starting view cleanup for database %s...", db_name)
+        try:
+            db.view_cleanup()
+        except:
+            logging.error("Error cleaning up views for database %s", db_name)
+        
+logging.info("All maintenance tasks started.")
 sys.exit()
