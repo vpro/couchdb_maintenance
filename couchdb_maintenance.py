@@ -67,20 +67,20 @@ for server_url in server_urls:
         try:	
             db.compact()
         except :
-            logging.error("Error compacting database %s", db_name)
+            logging.error("Error compacting database %s for the CouchDB instance at %s", db_name, server_url)
             
         for design_doc_name in db.all_docs(startkey="_design", endkey="_design0", wrapper=lambda row: row['id'][len('_design/'):]):
 	    logging.info("Starting compaction for design document %s...", design_doc_name)
 	    try:
                 db.compact(dname=design_doc_name)
             except:
-                logging.error("Error compacting design document %s", design_doc_name)
+                logging.error("Error compacting design document %s of database %s for the CouchDB instance at %s", design_doc_name, db_name, server_url)
         
         logging.info("Starting view cleanup for database %s...", db_name)
         try:
             db.view_cleanup()
         except:
-            logging.error("Error cleaning up views for database %s", db_name)
+            logging.error("Error cleaning up views of database %s for the CouchDB instance at %s", db_name, server_url)
         
 logging.info("All maintenance tasks started.")
 sys.exit()
