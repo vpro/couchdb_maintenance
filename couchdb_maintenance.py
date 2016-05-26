@@ -37,7 +37,7 @@ server_urls = sys.argv[1:]
 logging.basicConfig(level=log_level)
 
 if not server_urls:
-    logging.error("Please supply one or more URL's to CouchDB instances to carry out maintenance for.")
+    logging.error("Please supply one or more URL's for CouchDB instances to carry out maintenance for.")
     sys.exit(1)
 
 for server_url in server_urls:
@@ -57,7 +57,8 @@ for server_url in server_urls:
     logging.info("Databases: %s", ", ".join(db_names))
 
     for db_name in db_names:
-        if db_name == "_users":
+        if db_name.startswith('_'):
+            logging.info("Skipping database starting with '_': %s", db_name)
             continue
 
         logging.info("Database: %s", db_name)
